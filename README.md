@@ -1,2 +1,2 @@
 # blackJack
-# The black jack card game running in console.
+# The black jack card game, including GUI.
