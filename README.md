@@ -1,2 +1,3 @@
 # blackJack
-# The black jack card game, including GUI.
+// The blackjack card game, including GUI.
+// This project is developed as a school assignment.
