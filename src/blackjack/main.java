@@ -154,7 +154,7 @@ public class Main {
 				//Adds aces
 				if(score.getPlayerScore() < 22 && deck.getCardRank(0) == 1) {
 					drawButton.getButton().setEnabled(false);
-					callButton.getButton().setEnabled(false);
+					callButton.getButton().setEnabled(true);
 					yesButton.getButton().setEnabled(true);
 					noButton.getButton().setEnabled(true);
 					infoLabel3.setText("Next card is an ACE! Change its value to 11?");
@@ -176,6 +176,8 @@ public class Main {
 			public void actionPerformed(ActionEvent e) {
 				drawButton.getButton().setEnabled(false);
 				callButton.getButton().setEnabled(false);
+				yesButton.getButton().setEnabled(false);
+				noButton.getButton().setEnabled(false);
 				while(score.getDealerScore() < 16) {
 					dealerPanel.addLabel(new Label(String.valueOf(deck.getDeck().get(0))).getLabel());
 					dealerHand.addCard(deck.getCard());
