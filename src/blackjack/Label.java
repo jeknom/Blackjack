@@ -27,7 +27,7 @@ private ImageIcon img;
 		
 		//Setting text position, in this case under the card image.
 		this.label.setHorizontalTextPosition(JLabel.CENTER); //<- Using only this will draw text in center of the card image.
-		this.label.setVerticalTextPosition(JLabel.BOTTOM);
+		//this.label.setVerticalTextPosition(JLabel.BOTTOM);
 	}
 	
 	//Set methods
