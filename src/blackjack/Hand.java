@@ -2,35 +2,53 @@ package blackjack;
 import java.util.ArrayList;
 
 public class Hand {
-private ArrayList<Card> Cards = new ArrayList<Card>();
+private ArrayList<Card> hand;
 
-	public void addCard(Card newCard) {
-		Cards.add(newCard);
+	//Constructor
+	public Hand() {
+		this.hand = new ArrayList<Card>();
+	}
+	
+	//Get methods
+	public ArrayList<Card> getHand() {
+		return this.hand;
+	}
+	
+	public int getCardRank(int column) {
+		return hand.get(column).getRank();
+	}
+	
+	public String getCardSuit(int column) {
+		return hand.get(column).getSuit();
 	}
 	
 	public int getTotal() {
 		int total=0;
-		for (int i=0; i<Cards.size(); i++) {
-			total += Cards.get(i).getRank();
+		for(int i=0; i < hand.size(); i++) {
+			total += hand.get(i).getRank();
 		}
 		return total;
 	}
 	
+	//Set methods
+	public void setCardRank(int column, int rank) {
+		hand.get(column).setRank(rank);
+	}
+	
+	public void setCardSuit(int column, String suit) {
+		hand.get(column).setSuit(suit);
+	}
+	
+	//Add methods
+	public void addCard(Card card) {
+		this.hand.add(card);
+	}
+	//Other
 	public void clearHand() {
-			Cards.clear();
+		this.hand.clear();
 	}
 	
-	public int getCurrent() {
-		int current=0;
-		current = Cards.get(0).getRank();
-		return current;
-	}
-	
-	public String toString() {
-		String printHand="";
-		for (int i=0; i<Cards.size();i++) {
-			printHand += Cards.get(i).getRank() + " " + Cards.get(i).getSuit() + " ";
-		}
-	return printHand;
+	public void aceChecker() {
+		
 	}
 }

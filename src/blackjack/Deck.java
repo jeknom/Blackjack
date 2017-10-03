@@ -3,69 +3,76 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Deck {
-private ArrayList<Card> deck = new ArrayList<Card>();
+private ArrayList<Card> deck;
 	
-	//Deck cleaner and builder
+	//Constructor
+	public Deck() {
+		this.deck = new ArrayList<Card>();
+	}
+	//Build
 	public void buildDeck() {
-		//Clean up
-		for (int i=0; i < deck.size(); i++) {
-			deck.remove(0);
+		this.deck.clear();
+		
+		for (int i=2; i < 11; i++) {
+			this.deck.add(new Card(i, "Hearts"));
+			this.deck.add(new Card(i, "Diamonds"));
+			this.deck.add(new Card(i, "Clubs"));
+			this.deck.add(new Card(i, "Spades"));
 		}
 		
-		//Add cards
+		this.deck.add(new Card(10, "Jack of Hearts"));
+		this.deck.add(new Card(10, "Queen of Hearts"));
+		this.deck.add(new Card(10, "King of Hearts"));
+		this.deck.add(new Card(1, "Ace of Hearts"));
 		
-		//Hearts
-		for (int i=1; i < 11; i++) {
-			deck.add(new Card(i,"Hearts"));
-		}
-		for (int i=0; i < 4; i++) {
-			deck.add(new Card(10,"Hearts"));
-		}
-		//Diamonds
-		for (int i=1; i < 11; i++) {
-			deck.add(new Card(i,"Diamonds"));
-		}
-		for (int i=0; i < 4; i++) {
-			deck.add(new Card(10,"Diamonds"));
-		}
-		//Clubs
-		for (int i=1; i < 11; i++) {
-			deck.add(new Card(i,"Clubs"));
-		}
-		for (int i=0; i < 4; i++) {
-			deck.add(new Card(10,"Clubs"));
-		}
-		//Spades
-		for (int i=1; i < 11; i++) {
-			deck.add(new Card(i,"Spades"));
-		}
-		for (int i=0; i < 4; i++) {
-			deck.add(new Card(10,"Spades"));
-		}
-	Collections.shuffle(deck);
+		this.deck.add(new Card(10, "Jack of Diamonds"));
+		this.deck.add(new Card(10, "Queen of Diamonds"));
+		this.deck.add(new Card(10, "King of Diamonds"));
+		this.deck.add(new Card(1, "Ace of Diamonds"));
+		
+		this.deck.add(new Card(10, "Jack of Clubs"));
+		this.deck.add(new Card(10, "Queen of Clubs"));
+		this.deck.add(new Card(10, "King of Clubs"));
+		this.deck.add(new Card(1, "Ace of Clubs"));
+		
+		this.deck.add(new Card(10, "Jack of Spades"));
+		this.deck.add(new Card(10, "Queen of Spades"));
+		this.deck.add(new Card(10, "King of Spades"));
+		this.deck.add(new Card(1, "Ace of Spades"));
+		
+		Collections.shuffle(this.deck);
 	}
 	
-	//Card draw method
-	public Card getCard() {
-		Card newCard = this.deck.get(0);
-		this.deck.remove(0);
-		return newCard;
+	//Get methods
+	public ArrayList<Card> getDeck() {
+		return this.deck;
 	}
 	
-	public int getCurrent() {
-		return deck.get(0).getRank();
+	public int getCardRank(int column) {
+		return deck.get(column).getRank();
 	}
 	
-	public void setCurrent(int cR) {
-		this.deck.get(0).setRank(cR);
+	public String getCardSuit(int column) {
+		return deck.get(column).getSuit();
 	}
 	
+	public String getCardString(int column) {
+		return String.valueOf(deck.get(column));
+	}
 	
-	public String toString() {
-		String printDeck="";
-		for (int i=0; i<deck.size();i++) {
-			printDeck += deck.get(i).getRank() + " " + deck.get(i).getSuit() + " ";
-		}
-	return printDeck;
+	public Card getCard(){
+		Card holder;
+		holder = deck.get(0);
+		deck.remove(0);
+		return holder;
+	}
+	
+	//Set methods
+	public void setCardRank(int column, int rank) {
+		deck.get(column).setRank(rank);
+	}
+	
+	public void setCardSuit(int column, String suit) {
+		deck.get(column).setSuit(suit);
 	}
 }
