@@ -83,9 +83,15 @@ public class Main {
 				playerPanel.removeAndRefresh();
 				dealerPanel.removeAndRefresh();
 				deck.buildDeck();
+				if(deck.getCardRank(0) == 1 && score.getDealerScore() < 11) {
+					deck.setCardRank(0, 11);
+				}
 				infoLabel1.setText("Player Score " + String.valueOf(score.getPlayerScore()));
-				infoLabel2.setText("");
 				infoLabel3.setText("");
+				dealerPanel.addLabel(new Label(String.valueOf(deck.getDeck().get(0))).getLabel());
+				dealerHand.addCard(deck.getCard());
+				score.setDealerScore(dealerHand.getTotal());
+				infoLabel2.setText("Dealer Score " + String.valueOf(score.getDealerScore()));
 			}
 		});
 		
@@ -179,6 +185,9 @@ public class Main {
 				yesButton.getButton().setEnabled(false);
 				noButton.getButton().setEnabled(false);
 				while(score.getDealerScore() < 16) {
+					if(deck.getCardRank(0) == 1 && score.getDealerScore() < 11) {
+						deck.setCardRank(0, 11);
+					}
 					dealerPanel.addLabel(new Label(String.valueOf(deck.getDeck().get(0))).getLabel());
 					dealerHand.addCard(deck.getCard());
 					score.setDealerScore(dealerHand.getTotal());
