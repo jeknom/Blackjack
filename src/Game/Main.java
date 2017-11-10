@@ -5,11 +5,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.sql.SQLException;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-
-
 public class Main {
 	
 	//Create gui
@@ -29,11 +24,14 @@ public class Main {
 	//Database
 	static Database db = new Database();
 	
+	//Sounds
+	private static File hit = new File("sound/hit.wav");
+	
 	public static void main(String[] args) throws Exception {
 		//Player name and decks
 		startQ();
-		
 		gui.setButtons(false, false);
+		
 		//ActionListeners
 		gui.fileNewGame().addActionListener(new ActionListener(){
 		    @Override
@@ -42,11 +40,29 @@ public class Main {
 		    }
 		});
 		
-		gui.fileHelp().addActionListener(new ActionListener(){
+		gui.fileOptions().addActionListener(new ActionListener(){
 		    @Override
 		    public void actionPerformed(ActionEvent e){
-		        System.out.println("Opening help screen!");
+		    	gui.options();
 		    }
+		});
+		
+		gui.optApply().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				db.setDb(gui.optDbArea());
+				db.setUn(gui.optUnArea());
+				db.setPw(gui.optPwArea());
+				
+				gui.optSetInfo("Changes applied!");
+			}
+		});
+		
+		gui.optBack().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.options();
+			}
 		});
 		
 		gui.fileExit().addActionListener(new ActionListener(){
@@ -70,17 +86,13 @@ public class Main {
 				call();
 			}
 		});
-		
-
-		
 		System.out.println("Action listeners online");
 	}
 	
 	//New game method
 	private static void newGame() {
-		gui.fileNewGame().setEnabled(false);
 		if (deckCheck == true) {
-			gameState.wipeALL();
+			deck.clear();
 			for (int i=0; i<gameState.getDecks(); i++) {
 				deck.addDeck();
 				System.out.println("Deck added.");
@@ -94,59 +106,41 @@ public class Main {
 	        playerHand.getHand().clear();
 	        dealerHand.getHand().clear();
 	        gui.clearBoard();
-		        int bet = gui.betSlider().getValue();
-		        gameState.setBet(bet);
-		        if (gameState.playerMoney() > bet) {
-		        	gameState.subtractPlayerMoney(bet);
-		        	System.out.println("Bet set to " + bet);
-		        }else {
+		        if (gameState.playerMoney() > gui.betSlider().getValue()) {
+		        	gameState.setBet(gui.betSlider().getValue());
+		        	gameState.subtractPlayerMoney(gui.betSlider().getValue());
+		        	System.out.println("Bet set to: " + gameState.playerBet());
+		        } else {
+		        	System.out.println("Not enough money. Going all in...");
 		        	gameState.setBet(gameState.playerMoney());
-		        	System.out.println("Not enough money. Bet set to: " + gameState.playerMoney());
 		        	gameState.subtractPlayerMoney(gameState.playerMoney());
+		        	System.out.println("Bet set to " + gameState.playerBet());
 		        }
 	        gui.setButtons(true, true);
 	        gui.clearBoard();
+	        if (deck.getDeck().get(0).getRank() == 1) {
+	        	deck.getDeck().get(0).setRank(11);
+	        }
 	        gameState.addDealerTotal(deck.getDeck().get(0).getRank());
 	        dealerHand.addCard(deck.getCard());
-	        gui.dealerPaddPanel(dealerHand.getHand().get(0).getPanel());
+	        gui.dealerPaddPanel(dealerHand.getHand().get(0).getPanel(hit));
 	        gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(), gameState.dealerTotal());
-    	}else {
-    		System.out.println("You ain't got money, honey.");
-    		gui.announcer("src/img/nomoney.png", "New game",true,true);
-    		gameState.wipeALL();
-    		nrBtnActionListener();
-    		lbBtnActionListener();
     	}
 	}
 	
 	//Card draw
 	private static void hit() {
 		if (deck.getDeck().size() > 0) {
-			File hit = new File("sound/hit.wav");
 			if (gameState.getStatus().equals("go")) {
-		    	try {
-					Clip clip = AudioSystem.getClip();
-					clip.open(AudioSystem.getAudioInputStream(hit));
-					clip.start();
-				}
-				catch(Exception a) {
-					System.out.println("Sound could not be played");
-				}
-		    	
-		    	if (deck.getDeck().get(0).getRank() == 1) {
-		    		if (gui.convertAce() == true) {
-		    			deck.getDeck().get(0).setRank(11);
-		    			System.out.println("Converted ace value to 11..");
-		    		}else {
-		    			System.out.println("Keeping the same value");
-		    		}
+		    	if (deck.getDeck().get(0).getRank() == 1 && gameState.playerTotal() < 11) {
+		    		deck.getDeck().get(0).setRank(11);
 		    	}
 		    	
 		    	gameState.addPlayerTotal(deck.getDeck().get(0).getRank());
 		    	playerHand.addCard(deck.getCard());
 		    	gui.playerP().removeAll();
 		    	for (int i=0; i < playerHand.getHand().size(); i++) {
-		    		gui.playerPaddPanel(playerHand.getHand().get(i).getPanel());
+		    		gui.playerPaddPanel(playerHand.getHand().get(i).getPanel(hit));
 		    	}
 		    	if (!gameState.getStatus().equals("go")) {
 		    		gui.setButtons(false, false);
@@ -154,9 +148,22 @@ public class Main {
 	    	}
 	    	gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(), gameState.dealerTotal());
 	    	if (gameState.getStatus().equals("overdrew")) {
-	    		gui.announcer("src/img/overdraw.png", "New round", true, true);
-	    		nrBtnActionListener();
-	    		lbBtnActionListener();
+	    		gui.announcer("img/overdraw.png", "New round", true, true, true, false);
+	    		nr();
+	    		lb();
+	    		gui.fileNewGame().setEnabled(true);
+	    		if (gameState.playerMoney() < 1) {
+	    			gui.announcer("img/nomoney.png", "New game",true,true,false,true);
+					nr();
+					lb();
+	    		}
+	    	} else if (gameState.playerTotal() == 21 && playerHand.size() < 3) {
+	    		gui.setButtons(false, false);
+	    		gui.announcer("img/bj.png", "New round", true, true, true,false);
+				gameState.addPlayerMoney(gameState.playerBet() * 3);
+				gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
+				nr();
+	    		lb();
 	    		gui.fileNewGame().setEnabled(true);
 	    	}
 		} else {
@@ -168,69 +175,125 @@ public class Main {
 	//Stop draw
 	private static void call() {
 		gui.setButtons(false, false);
+		Thread thread = new Thread(() -> {
+		boolean drawing = true;
 		if (deck.getDeck().size() > 0) {
 			if (gameState.getStatus().equals("go")) {
 				gui.setButtons(false, false);
-				while(gameState.dealerTotal() < 17 && deck.getDeck().size() > 0) {
-					gameState.addDealerTotal(deck.getDeck().get(0).getRank());
-					dealerHand.addCard(deck.getCard());
-					gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
-					gui.dealerP().removeAll();
-						for (int i=0; i < dealerHand.getHand().size(); i++) {
-							gui.dealerPaddPanel(dealerHand.getHand().get(i).getPanel());
-				    	}
+				while(drawing == true && deck.getDeck().size() > 0) {
+					if (deck.getDeck().get(0).getRank() == 1 && gameState.dealerTotal() < 11) {
+						deck.getDeck().get(0).setRank(11);
+					}
+					if (gameState.dealerTotal() < 17) {
+						gameState.addDealerTotal(deck.getDeck().get(0).getRank());
+						dealerHand.addCard(deck.getCard());
+					}
+					else if (gameState.dealerTotal() > 16) {
+						for (int i=1; i < dealerHand.getHand().size(); i++) {
+					        try {
+					            Thread.sleep(300);
+					            gui.dealerPaddPanel(dealerHand.getHand().get(i).getPanel(hit));
+					            Thread.sleep(300);
+					        } catch (InterruptedException e) {
+					            e.printStackTrace();
+					        }
+						}
+						try {
+				            Thread.sleep(800);
+				        } catch (InterruptedException e) {
+				            e.printStackTrace();
+				        }
+						gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
+						drawing = false;
+					}
 				}
 				if (deck.getDeck().size() > 0) {
 					String lbimg="";
 					switch(gameState.getWinner(playerHand.size(), dealerHand.size())){
 					case 0:
-						lbimg = "src/img/victory.png";
+						lbimg = "img/victory.png";
 						gameState.addPlayerMoney(gameState.playerBet() * 2);
 						gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
 						break;
 					case 1:
-						lbimg = "src/img/bj.png";
+						lbimg = "img/bj.png";
 						gameState.addPlayerMoney(gameState.playerBet() * 4);
 						gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
 						break;
 					case 2:
-						lbimg = "src/img/defeat.png";
+						lbimg = "img/defeat.png";
 						break;
 					case 3:
-						lbimg = "src/img/defeat.png";
+						lbimg = "img/defeat.png";
+						break;
+					case 4:
+						lbimg = "img/draw.png";
+						gameState.addPlayerMoney(gameState.playerBet());
+						gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
 						break;
 					}
-					gui.announcer(lbimg, "New round",true,true);
-					nrBtnActionListener();
-					lbBtnActionListener();
+					if (gameState.playerMoney() < 1) {
+						gui.announcer("img/nomoney.png", "New game",true,true,false,true);
+						nr();
+						lb();
+					} else if (gameState.playerMoney() > 0) {
+					gui.announcer(lbimg, "New round",true,true,true,false);
+					nr();
+					lb();
 					gui.fileNewGame().setEnabled(true);
+					}
 				} else {
-					gui.announcer("src/img/end.png", "New game", true, true);
-					nrBtnActionListener();
-					lbBtnActionListener();
+					gui.announcer("img/end.png", "New game",true,true,false,true);
+					try {
+						db.insert(gameState.getName(), gameState.playerMoney(), gameState.getDecks());
+					} catch(SQLException ex){
+						System.out.println(ex.getMessage());
+					}
+					gui.announcer("img/end.png", "New game",true,true,false,true);
+					nr();
+					lb();
 				}
-			}
+				}
 		} else {
 			try {
 			db.insert(gameState.getName(), gameState.playerMoney(), gameState.getDecks());
 			} catch(SQLException ex){
 				System.out.println(ex.getMessage());
 			}
-			gui.announcer("src/img/end.png", "New game", true, true);
-			nrBtnActionListener();
-			lbBtnActionListener();
+			gui.announcer("img/end.png", "New game",true,true,false,true);
+			nr();
+			lb();
 		}
+		});
+		thread.start();
 	}
 	
 	//Announcer action listener
-	private static void nrBtnActionListener() {
+	private static void nr() {
 		gui.nrButton().addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (deck.getDeck().size() != 0) {
+				if (deck.getDeck().size() > 0 && gameState.playerMoney() > 0) {
 					newGame();
 				} else {
 					startQ();
+				}
+			}
+		});
+	}
+	
+	
+	//Leaderboard action listener
+	private static void lb(){
+		gui.lbButton().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+				gui.leaderboards(db.getPlayers());
+				search();
+				nr();
+				} catch(SQLException ex) {
+					System.out.println(ex.getMessage());
 				}
 			}
 		});
@@ -240,35 +303,22 @@ public class Main {
 	private static void startQ() {
 		gui.fileNewGame().setEnabled(false);
 		gui.startQ();
+		gameState.wipeALL();
+		gui.setScoreText(gameState.playerTotal(), gameState.playerBet(),gameState.playerMoney(),gameState.dealerTotal());
 		gui.goBtn().addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gameState.setName(gui.getName());
-				System.out.println("Game will be played with " + gui.getDecks() + " decks");
 				gameState.setDecks(gui.getDecks());
+				System.out.println("Game will be played with " + gui.getDecks() + " decks");
 				deckCheck = true;
 				newGame();
 			}
 		});
 	}
 	
-	//Leaderboard action listener
-	private static void lbBtnActionListener(){
-		gui.lbButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-				gui.leaderboards(db.getPlayers());
-				searchBtn();
-				} catch(SQLException ex) {
-					System.out.println(ex.getMessage());
-				}
-			}
-		});
-	}
-	
 	//Highscore search
-	private static void searchBtn() {
+	private static void search() {
 		gui.search().addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -276,7 +326,7 @@ public class Main {
 					System.out.println("Searching for player " + gui.searchArea());
 					gui.leaderboards(db.searchName(gui.searchArea()));
 					System.out.println("Search complete");
-					searchBtn();
+					search();
 				}catch(SQLException ex){
 					System.out.println(ex.getMessage());
 				}

@@ -14,15 +14,18 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class Gui {
 	
 	private JMenuItem fileNewGame;
-	private JMenuItem fileHelp;
+	private JMenuItem fileOptions;
+	private boolean optionsVisible;
 	private JMenuItem fileExit;
 	private JMenu fileM;
 	private JMenuBar mainMB;
@@ -32,8 +35,12 @@ public class Gui {
 	private JLabel playerBet;
 	private JLabel playerMoney;
 	private JLabel dealerTotal;
+	private JLabel optInfo;
 	private JTextArea nameArea;
 	private JTextArea searchArea;
+	private JTextArea dbArea;
+	private JTextArea unArea;
+	private JTextArea pwArea;
 	private JComboBox<String> deckArea;
 	private JSlider betSlider;
 	private JButton goBtn;
@@ -42,10 +49,14 @@ public class Gui {
 	private JButton nrButton;
 	private JButton lbButton;
 	private JButton search;
+	private JButton optApply;
+	private JButton optBack;
+	private JRadioButton dbEnable;
 	
 	private JPanel playerP;
 	private JPanel dealerP;
 	private JPanel betP;
+	private JPanel optionsP;
 	private JPanel gameP;
 	private JPanel sideBP;
 	private JPanel sideP;
@@ -55,38 +66,85 @@ public class Gui {
 		public Gui() {
 			
 			//Dropdown menu
-			this.fileNewGame = new JMenuItem("New game", new ImageIcon("src/img/green.png"));
-			this.fileHelp = new JMenuItem("Help", new ImageIcon("src/img/yellow.png"));
-			this.fileExit = new JMenuItem("Exit", new ImageIcon("src/img/red.png"));
+			this.fileNewGame = new JMenuItem("New game", new ImageIcon("img/green.png"));
+			this.fileOptions = new JMenuItem("Options", new ImageIcon("img/yellow.png"));
+			this.fileExit = new JMenuItem("Exit", new ImageIcon("img/red.png"));
 			
-			this.fileM = new JMenu("File");
+			this.fileM = new JMenu("Menu");
 			this.fileM.add(this.fileNewGame);
-			this.fileM.add(this.fileHelp);
+			this.fileM.add(this.fileOptions);
 			this.fileM.add(this.fileExit);
 			
 			this.mainMB = new JMenuBar();
 			this.mainMB.add(this.fileM);
 			
 			//Playerpanel
-			this.playerP = new JPanel();
+			this.playerP = new JPanel(new FlowLayout());
 			this.playerP.setBorder(BorderFactory.createTitledBorder("Player"));
 			
 			//Dealerpanel
 			this.dealerP = new JPanel();
 			this.dealerP.setBorder(BorderFactory.createTitledBorder("Dealer"));
 			
+			//Optionspanel
+			this.optionsP = new JPanel(new GridLayout(4,0));
+			this.optionsP.setVisible(false);
+			
+			this.optionsP.add(new JLabel("<html><h1>OPTIONS</h1></html>"));
+			
+			this.dbArea = new JTextArea("localhost:3306/blackjack",1,20);
+			this.dbArea.setBorder(BorderFactory.createTitledBorder("Database name"));
+			
+			this.unArea = new JTextArea("root",1,20);
+			this.unArea.setBorder(BorderFactory.createTitledBorder("Username"));
+			
+			this.pwArea = new JTextArea("",1,20);
+			this.pwArea.setBorder(BorderFactory.createTitledBorder("Password"));
+			
+			JPanel dbP = new JPanel();
+			dbP.add(this.dbArea);
+			dbP.add(this.unArea);
+			dbP.add(this.pwArea);
+			
+			this.optApply = new JButton("Apply");
+			this.optApply.setContentAreaFilled(false);
+			this.optApply.setFocusPainted(false);
+			
+			this.optBack = new JButton("Back");
+			this.optBack.setContentAreaFilled(false);
+			this.optBack.setFocusPainted(false);
+			
+			JPanel oBtnP = new JPanel(new FlowLayout());
+			oBtnP.add(this.optApply);
+			oBtnP.add(this.optBack);
+
+			this.optionsP.add(dbP);
+			this.optionsP.add(oBtnP);
+			
 			//Bet slider
-			this.betSlider = new JSlider(JSlider.HORIZONTAL,0,100,1);
-			this.betSlider.setMajorTickSpacing(50);
-			this.betSlider.setMinorTickSpacing(10);
+			this.betSlider = new JSlider(JSlider.HORIZONTAL,0,1000,1);
+			this.betSlider.setMajorTickSpacing(500);
+			this.betSlider.setMinorTickSpacing(100);
 			this.betSlider.setPaintTicks(true);
 			this.betSlider.setPaintLabels(true);
-			this.betSlider.setSnapToTicks(true);	
+			this.betSlider.setSnapToTicks(false);
 			this.betSlider.setBorder(BorderFactory.createTitledBorder("Bet"));
 			this.betP = new JPanel();
+			JLabel betLabel = new JLabel();
 			this.betP.add(betSlider);
-			
-			
+			this.betP.add(betLabel);
+			ChangeListener listener = new ChangeListener()
+	         {
+	            public void stateChanged(ChangeEvent event)
+	            {
+	               // update text field when the slider value changes
+	               betSlider = (JSlider) event.getSource();
+	               betLabel.setText("" + betSlider.getValue());
+	            }
+	         };
+	         this.betSlider.addChangeListener(listener);
+	         
+	         
 			//Gamepanel
 			this.gameP = new JPanel(new GridLayout(2,0));
 			this.gameP.setPreferredSize(new Dimension(600,600));
@@ -111,20 +169,20 @@ public class Gui {
 			this.sideBP.add(callButton);
 			
 			//Sidepanel
-			this.logoLabel = new JLabel(new ImageIcon("src/img/bjlogo.png"));
-			this.playerTotal = new JLabel(new ImageIcon("src/img/user.png"));
+			this.logoLabel = new JLabel(new ImageIcon("img/bjlogo.png"));
+			this.playerTotal = new JLabel(new ImageIcon("img/user.png"));
 			this.playerTotal.setText("Player total: ");
 			this.playerTotal.setHorizontalTextPosition(JLabel.CENTER);
 			this.playerTotal.setVerticalTextPosition(JLabel.BOTTOM);
-			this.playerBet = new JLabel(new ImageIcon("src/img/coinStack.png"));
+			this.playerBet = new JLabel(new ImageIcon("img/coinStack.png"));
 			this.playerBet.setText("Player bet: ");
 			this.playerBet.setHorizontalTextPosition(JLabel.CENTER);
 			this.playerBet.setVerticalTextPosition(JLabel.BOTTOM);
-			this.playerMoney = new JLabel(new ImageIcon("src/img/coin.png"));
+			this.playerMoney = new JLabel(new ImageIcon("img/coin.png"));
 			this.playerMoney.setText("Player money: ");
 			this.playerMoney.setHorizontalTextPosition(JLabel.CENTER);
 			this.playerMoney.setVerticalTextPosition(JLabel.BOTTOM);
-			this.dealerTotal = new JLabel(new ImageIcon("src/img/house.png"));
+			this.dealerTotal = new JLabel(new ImageIcon("img/house.png"));
 			this.dealerTotal.setText("Dealer total: ");
 			this.dealerTotal.setHorizontalTextPosition(JLabel.CENTER);
 			this.dealerTotal.setVerticalTextPosition(JLabel.BOTTOM);
@@ -142,12 +200,13 @@ public class Gui {
 			this.mainP = new JPanel();
 			this.mainP.add(this.sideP);
 			this.mainP.add(this.gameP);
+			this.mainP.add(this.optionsP);
 			
 			//Frame
 			this.mainF = new JFrame("Blackjack");
 			this.mainF.getContentPane().add(this.mainP);
 			this.mainF.setJMenuBar(this.mainMB);
-			ImageIcon icon = new ImageIcon("src/img/bjicon.png");
+			ImageIcon icon = new ImageIcon("img/bjicon.png");
 			this.mainF.setIconImage(icon.getImage());
 			this.mainF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			this.mainF.pack();
@@ -155,13 +214,66 @@ public class Gui {
 			this.mainF.setVisible(true);
 		}
 		
+		public void repaint() {
+			this.mainF.invalidate();
+			this.mainF.validate();
+			this.mainF.repaint();
+			this.mainF.pack();
+		}
+
+		
 		//Get
 		public JMenuItem fileNewGame() {
 			return this.fileNewGame;
 		}
 		
-		public JMenuItem fileHelp() {
-			return this.fileHelp;
+		public JMenuItem fileOptions() {
+			return this.fileOptions;
+		}
+		
+		public JButton optApply() {
+			return this.optApply;
+		}
+		
+		public JButton optBack() {
+			return this.optBack;
+		}
+		
+		public String optDbArea() {
+			return this.dbArea.getText();
+		}
+		
+		public String optUnArea() {
+			return this.unArea.getText();
+		}
+		
+		public String optPwArea() {
+			return this.pwArea.getText();
+		}
+		
+		public JRadioButton dbEnableBtn() {
+			return this.dbEnable;
+		}
+		
+		public void optSetInfo(String text) {
+			Thread thread = new Thread (()-> {
+				this.optInfo = new JLabel(text);
+				this.optInfo.setVisible(true);
+				this.optionsP.add(optInfo);
+				this.optionsP.invalidate();
+				this.optionsP.validate();
+				this.optionsP.repaint();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				this.optionsP.remove(this.optInfo);
+				this.optionsP.invalidate();
+				this.optionsP.validate();
+				this.optionsP.repaint();
+			});
+			thread.start();
 		}
 		
 		public JMenuItem fileExit() {
@@ -194,6 +306,24 @@ public class Gui {
 			this.playerP.invalidate();
 			this.playerP.validate();
 			this.playerP.repaint();
+		}
+		
+		//Options menu
+		public void options() {
+			if (optionsVisible == true) {
+				this.optionsP.setVisible(false);
+				this.sideP.setVisible(true);
+				this.gameP.setVisible(true);
+				optionsVisible = false;
+			}else {
+				this.sideP.setVisible(false);
+				this.gameP.setVisible(false);
+				this.optionsP.setVisible(true);
+				optionsVisible = true;
+			}
+			this.mainF.invalidate();
+			this.mainF.validate();
+			this.mainF.repaint();
 		}
 		
 		public void dealerPaddPanel(JPanel panel) {
@@ -233,7 +363,7 @@ public class Gui {
 		//Name and amount of decks
 		public void startQ() {
 			this.gameP.removeAll();
-			JLabel nameL = new JLabel(new ImageIcon("src/img/user.png"));
+			JLabel nameL = new JLabel(new ImageIcon("img/user.png"));
 			
 			this.nameArea = new JTextArea("Anonymous",1,10);
 			this.nameArea.setBorder(BorderFactory.createTitledBorder("Name"));
@@ -241,7 +371,7 @@ public class Gui {
 			nameP.add(nameL);
 			nameP.add(this.nameArea);
 			
-			JLabel deckL = new JLabel(new ImageIcon("src/img/deck.png"));
+			JLabel deckL = new JLabel(new ImageIcon("img/deck.png"));
 			
 			String[] di = {"1","2","3","4","5","6","7","8","9"};
 			this.deckArea = new JComboBox<String>(di);
@@ -260,7 +390,6 @@ public class Gui {
 			startBtnP.add(this.goBtn);
 			
 			JPanel ngp = new JPanel(new GridLayout(5,0));
-			
 			ngp.setPreferredSize(new Dimension(200,300));
 			ngp.add(new JLabel());
 			ngp.add(nameP);
@@ -288,7 +417,7 @@ public class Gui {
 		}
 		
 		//Announcer
-		public void announcer(String img, String text, boolean nrEnable, boolean lbEnable) {
+		public void announcer(String img, String text, boolean nrEnable, boolean lbEnable, boolean betEnable, boolean lbDraw) {
 			this.fileNewGame().setEnabled(false);
 			JPanel announcerP = new JPanel(new BorderLayout());
 			this.nrButton = new JButton(text);
@@ -302,12 +431,17 @@ public class Gui {
 			JPanel aBtns = new JPanel();
 			announcerP.add(new JLabel(new ImageIcon(img)));
 			aBtns.add(nrButton);
-			aBtns.add(lbButton);
+			if (lbDraw == true) {
+				aBtns.add(this.lbButton);
+			}
 			announcerP.add(aBtns,BorderLayout.PAGE_END);
 			this.gameP.removeAll();
-			this.gameP.setLayout(new GridLayout(3,0));
+			this.gameP.setLayout(new GridLayout(4,0));
 			this.gameP.add(announcerP);
-			this.gameP.add(this.betP);
+			if (betEnable == true) {
+				this.gameP.add(this.betP);
+			}
+			this.gameP.add(this.playerP);
 			this.gameP.add(this.dealerP);
 			this.gameP.invalidate();
 			this.gameP.validate();
@@ -326,20 +460,20 @@ public class Gui {
 			hsPanel.setPreferredSize(new Dimension(600,400));
 			hsPanel.setBorder(BorderFactory.createEtchedBorder());
 			
-			JPanel searchP = new JPanel();
 			this.search = new JButton("Search");
 			this.search.setContentAreaFilled(false);
 			this.search.setFocusPainted(false);
 			this.searchArea = new JTextArea("Name here",1,20);
 			this.searchArea.setBorder(BorderFactory.createEtchedBorder());
+			JPanel searchP = new JPanel();
 			searchP.setPreferredSize(new Dimension(500,50));
 			searchP.add(this.searchArea);
 			searchP.add(this.search);
-			
 			this.gameP.setLayout(new FlowLayout());
-			this.gameP.add(new JLabel(new ImageIcon("src/img/leaderboards.png")));
+			this.gameP.add(new JLabel(new ImageIcon("img/leaderboards.png")));
 			this.gameP.add(searchP);
 			this.gameP.add(hsPanel);
+			this.gameP.add(this.nrButton);
 			this.gameP.invalidate();
 			this.gameP.validate();
 			this.gameP.repaint();
@@ -359,18 +493,5 @@ public class Gui {
 		
 		public JButton lbButton() {
 			return this.lbButton;
-		}
-		
-		//Ace convert
-		public boolean convertAce() {
-			boolean yn = false;
-			int reply = JOptionPane.showConfirmDialog(mainF, "Next card is an ace, change it's value to 11?","Blackjack",JOptionPane.YES_NO_OPTION);
-				if(reply == JOptionPane.YES_OPTION) {
-					yn = true;
-				}else {
-					yn = false;
-				}
-		return yn;
-		}
-		
+		}	
 }

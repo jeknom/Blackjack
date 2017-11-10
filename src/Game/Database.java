@@ -4,19 +4,32 @@ import java.util.ArrayList;
 
 public class Database {
 	
-	private String url = "jdbc:mysql://localhost:3306/blackjack?autoReconnect=true&useSSL=false";
+	private String url = "jdbc:mysql://localhost:3306/blackjack?useSSL=false";
 	private String username = "root";
 	private String password = "";
 	private Connection conn;
-	private Statement stmt;
+	private PreparedStatement pstmt;
 	private ResultSet rs;
+	
+	public void setDb(String db) {
+		this.url = "jdbc:mysql://"+db+"?useSSL=false";
+	}
+	
+	public void setUn(String un) {
+		this.username = un;
+	}
+	
+	public void setPw(String pw) {
+		this.password = pw;
+	}
 	
 	public ArrayList<Player> getPlayers() throws SQLException{
 		ArrayList<Player> players = new ArrayList<Player>();
 		players.clear();
 		this.conn = DriverManager.getConnection(url, username, password);
-		this.stmt = conn.createStatement();
-		this.rs = stmt.executeQuery("SELECT name, score, date, deck FROM score ORDER BY score DESC");
+		String query = "SELECT name, score, date, deck FROM score ORDER BY score DESC";
+		this.pstmt = conn.prepareStatement(query);
+		this.rs = pstmt.executeQuery();
 		while (rs.next()) {
 			String name = rs.getString("name");
 			int score = rs.getInt("score");
@@ -33,8 +46,10 @@ public class Database {
 		ArrayList<Player> players = new ArrayList<Player>();
 		players.clear();
 		this.conn = DriverManager.getConnection(url, username, password);
-		this.stmt = conn.createStatement();
-		this.rs = stmt.executeQuery("SELECT * FROM score WHERE name='"+searchName+"' ORDER BY score DESC;");
+		String query = "SELECT * FROM score WHERE name = ? ORDER BY score DESC";
+		this.pstmt = this.conn.prepareStatement(query);
+		this.pstmt.setString(1, searchName);
+		this.rs = this.pstmt.executeQuery();
 		while (rs.next()) {
 			String name = rs.getString("name");
 			int score = rs.getInt("score");
@@ -49,11 +64,16 @@ public class Database {
 	
 	public void insert(String name, int score, int decks) throws SQLException{
 		this.conn = DriverManager.getConnection(url, username, password);
-		this.stmt = conn.createStatement();
 		java.util.Date dt = new java.util.Date();
 		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String currentTime = sdf.format(dt);
-		stmt.execute("INSERT INTO `score`(`name`, `score`, `date`, `deck`) VALUES ('"+name+"','"+score+"','"+currentTime+"','"+decks+"')");
+		String insert = "INSERT INTO `score`(`name`, `score`, `date`, `deck`) VALUES (?, ?, ?, ?)";
+		PreparedStatement ps = conn.prepareStatement(insert);
+		ps.setString(1, name);
+		ps.setInt(2, score);
+		ps.setString(3, currentTime);
+		ps.setInt(4, decks);
+		ps.execute();
 		this.conn.close();
 	}
 	

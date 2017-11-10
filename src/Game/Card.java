@@ -12,6 +12,7 @@ private int rank;
 private String suit;
 private ImageIcon suitImg;
 private JLabel label;
+private JLabel label2;
 private JPanel panel;
 	
 	//Card constructor
@@ -20,17 +21,36 @@ private JPanel panel;
 		this.rank = rank;
 		this.suit = suit;
 		this.suitImg = suitImg;
-		
+		//
 		//Visual look of a card
-		this.panel = new JPanel(new BorderLayout());
-		this.panel.setPreferredSize(new Dimension(64,64));
-		this.panel.setBorder(BorderFactory.createEtchedBorder());
-		this.panel.setBackground(Color.white);
-		
-		this.label = new JLabel(suit, SwingConstants.CENTER);
+		this.label = new JLabel(suit);
 		this.label.setIcon(this.suitImg);
 		this.label.setHorizontalTextPosition(SwingConstants.RIGHT);
-		this.panel.add(this.label);
+		
+		this.label2 = new JLabel(suit, SwingConstants.RIGHT);
+		this.label2.setIcon(this.suitImg);
+		this.label2.setHorizontalTextPosition(SwingConstants.LEFT);
+		
+		this.panel = new JPanel(new BorderLayout());
+		this.panel.setPreferredSize(new Dimension(86,112));
+		this.panel.setBorder(BorderFactory.createEtchedBorder());
+		this.panel.setBackground(Color.white);
+		this.panel.add(this.label, BorderLayout.NORTH);
+		switch(suit) {
+		case "A":
+			this.panel.add(new JLabel(this.suitImg));
+			break;
+		case "K":
+			this.panel.add(new JLabel(new ImageIcon("img/k.png")));
+			break;
+		case "Q":
+			this.panel.add(new JLabel(new ImageIcon("img/q.png")));
+			break;
+		case "J":
+			this.panel.add(new JLabel(new ImageIcon("img/j.png")));
+			break;
+		}
+		this.panel.add(this.label2, BorderLayout.SOUTH);
 		
 		//Creating sound files
 		File draw = new File("sound/draw.wav");
@@ -55,7 +75,15 @@ private JPanel panel;
 	}
 	
 	//Get methods
-	public JPanel getPanel() {
+	public JPanel getPanel(File hit) {
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(hit));
+			clip.start();
+		}
+		catch(Exception a) {
+			System.out.println("Sound could not be played");
+		}
 		return this.panel;
 	}
 	

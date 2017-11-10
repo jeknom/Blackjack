@@ -82,6 +82,7 @@ public class State {
 		//Wincase 1 = player blackjack
 		//Wincase 2 = dealer win
 		//Wincase 3 = dealer blackjack
+		//Wincase 4 = draw
 		
 		//Player
 		if (playerTotal > dealerTotal && playerTotal < 22) {
@@ -102,7 +103,7 @@ public class State {
 			wincase = 0;
 		}
 		if (dealerTotal == playerTotal) {
-			wincase = 2;
+			wincase = 4;
 		}
 		return wincase;
 	}
